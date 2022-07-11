@@ -55,10 +55,11 @@ final public class MTLSharedGraphicsBuffer {
     public let texture: MTLTexture
     public let pixelBuffer: CVPixelBuffer
     public let buffer: MTLBuffer
-    public private(set) var vImageBuffer: vImage_Buffer
+    public let vImageBuffer: vImage_Buffer
     public let mtlPixelFormat: MTLPixelFormat
     public let cvPixelFormat: CVPixelFormat
-    private var allocationPointer: UnsafeMutableRawPointer?
+    public let baseAddress: UnsafeMutableRawPointer
+    public let bytesPerRow: Int
     
     // MARK: - Init
     
@@ -114,14 +115,19 @@ final public class MTLSharedGraphicsBuffer {
             align: pageSize
         )
 
+        var optionalAllocationPointer: UnsafeMutableRawPointer?
+        
         /// Allocate `pageAlignedTextureSize` bytes and place the
         /// address of the allocated memory in `self.allocationPointer`.
         /// The address of the allocated memory will be a multiple of `pageSize` which is hardware friendly.
         posix_memalign(
-            &self.allocationPointer,
+            &optionalAllocationPointer,
             pageSize,
             heapTextureSizeAndAlign.size
         )
+        
+        guard let allocationPointer = optionalAllocationPointer
+        else { throw Error.initializationFailed }
 
         // MARK: - Calculate bytes per row.
         /// Minimum texture alignment.
@@ -129,14 +135,14 @@ final public class MTLSharedGraphicsBuffer {
         /// The minimum alignment required when creating a texture buffer from a buffer.
         let textureBufferAlignment = context.minimumTextureBufferAlignment(for: pixelFormat)
 
-        self.vImageBuffer = vImage_Buffer()
+        var vImageBuffer = vImage_Buffer()
 
         /// Minimum vImage buffer alignment.
         ///
         /// Get the minimum data alignment required for buffer's contents,
         /// by passing `kvImageNoAllocate` to `vImage` constructor.
         let vImageBufferAlignment = vImageBuffer_Init(
-            &self.vImageBuffer,
+            &vImageBuffer,
             vImagePixelCount(height),
             vImagePixelCount(width),
             UInt32(bitsPerComponent),
@@ -146,8 +152,7 @@ final public class MTLSharedGraphicsBuffer {
         /// Pixel row alignment.
         ///
         /// Choose the maximum of previosly calculated alignments.
-        guard let pixelRowAlignment = [textureBufferAlignment, vImageBufferAlignment].max(),
-              let allocationPointer = self.allocationPointer
+        guard let pixelRowAlignment = [textureBufferAlignment, vImageBufferAlignment].max()
         else { throw Error.initializationFailed }
 
         let rowSize = pixelFormatSize * width
@@ -187,8 +192,12 @@ final public class MTLSharedGraphicsBuffer {
         ), let pixelBuffer = trialPixelBuffer
         else { throw Error.initializationFailed }
 
-        self.vImageBuffer.rowBytes = bytesPerRow
-        self.vImageBuffer.data = self.allocationPointer
+        vImageBuffer.rowBytes = bytesPerRow
+        vImageBuffer.data = allocationPointer
+        
+        self.baseAddress = allocationPointer
+        self.bytesPerRow = bytesPerRow
+        self.vImageBuffer = vImageBuffer
         self.buffer = buffer
         self.texture = texture
         self.pixelBuffer = pixelBuffer
