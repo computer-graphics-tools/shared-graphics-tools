@@ -24,8 +24,6 @@ public extension MTLTexture {
         return try self.graphicsData().cvPixelBufferView(cvPixelFormat: cvPixelFormat)
     }
     
-    #if arch(arm64)
-    @available(iOS 14.0, macCatalyst 14.0, *)
     func mlMultiArrayView(
         shape: [Int],
         dataType: MLMultiArrayDataType
@@ -36,7 +34,6 @@ public extension MTLTexture {
         )
     }
     
-    @available(iOS 14.0, macCatalyst 14.0, *)
     func mlMultiArrayView(
         shape: [Int],
         strides: [Int],
@@ -48,6 +45,4 @@ public extension MTLTexture {
             dataType: dataType
         )
     }
-    #endif
-
 }

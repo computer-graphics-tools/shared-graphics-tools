@@ -34,8 +34,6 @@ public struct GraphicsData {
         )
     }
     
-    #if arch(arm64)
-    @available(iOS 14.0, macCatalyst 14.0, *)
     public func mlMultiArrayView(
         shape: [Int],
         dataType: MLMultiArrayDataType
@@ -55,7 +53,6 @@ public struct GraphicsData {
         )
     }
     
-    @available(iOS 14.0, macCatalyst 14.0, *)
     public func mlMultiArrayView(
         shape: [Int],
         strides: [Int],
@@ -72,7 +69,6 @@ public struct GraphicsData {
         )
     }
     
-    #if !targetEnvironment(simulator)
     public func mtlBufferView(device: MTLDevice) throws -> MTLBuffer {
         guard let buffer = device.makeBuffer(
             bytesNoCopy: self.baseAddress,
@@ -106,6 +102,4 @@ public struct GraphicsData {
         
         return texture
     }
-    #endif // !targetEnvironment(simulator)
-    #endif // arch(arm64)
 }

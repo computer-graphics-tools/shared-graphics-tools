@@ -19,8 +19,6 @@ public extension MultiplanarPlanarGraphicsDataProvider {
         return try self.graphicsData(of: planeIndex).cvPixelBufferView(cvPixelFormat: cvPixelFormat)
     }
     
-    #if arch(arm64)
-    @available(iOS 14.0, macCatalyst 14.0, *)
     func mlMultiArrayView(
         planeIndex: Int,
         shape: [Int],
@@ -31,8 +29,7 @@ public extension MultiplanarPlanarGraphicsDataProvider {
             dataType: dataType
         )
     }
-    
-    @available(iOS 14.0, macCatalyst 14.0, *)
+
     func mlMultiArrayView(
         planeIndex: Int,
         shape: [Int],
@@ -46,7 +43,6 @@ public extension MultiplanarPlanarGraphicsDataProvider {
         )
     }
     
-    #if !targetEnvironment(simulator)
     func mtlBufferView(
         planeIndex: Int,
         device: MTLDevice
@@ -66,6 +62,4 @@ public extension MultiplanarPlanarGraphicsDataProvider {
             usage: usage
         )
     }
-    #endif // !targetEnvironment(simulator)
-    #endif // arch(arm64)
 }

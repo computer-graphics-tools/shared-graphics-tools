@@ -16,11 +16,11 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/eugenebokhan/metal-tools.git",
-            .upToNextMinor(from: "1.0.4")
+            .upToNextMinor(from: "1.0.11")
         ),
         .package(
             url: "https://github.com/eugenebokhan/core-video-tools.git",
-            .upToNextMinor(from: "0.0.2")
+            .upToNextMinor(from: "0.0.6")
         )
     ],
     targets: [

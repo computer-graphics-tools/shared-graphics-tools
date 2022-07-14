@@ -60,6 +60,8 @@ final public class MTLSharedGraphicsBuffer {
     public let cvPixelFormat: CVPixelFormat
     public let baseAddress: UnsafeMutableRawPointer
     public let bytesPerRow: Int
+    public var width: Int { self.texture.width }
+    public var height: Int { self.texture.height }
     
     // MARK: - Init
     
@@ -152,8 +154,7 @@ final public class MTLSharedGraphicsBuffer {
         /// Pixel row alignment.
         ///
         /// Choose the maximum of previosly calculated alignments.
-        guard let pixelRowAlignment = [textureBufferAlignment, vImageBufferAlignment].max()
-        else { throw Error.initializationFailed }
+        let pixelRowAlignment = max(textureBufferAlignment, vImageBufferAlignment)
 
         let rowSize = pixelFormatSize * width
 
@@ -162,45 +163,43 @@ final public class MTLSharedGraphicsBuffer {
         /// Calculate bytes per row by aligning row size with previously calculated `pixelRowAlignment`.
         let bytesPerRow = alignUp(size: rowSize,
                                   align: pixelRowAlignment)
+        
+        vImageBuffer.rowBytes = bytesPerRow
+        vImageBuffer.data = allocationPointer
 
-        let pixelBufferAttributes = [
-            kCVPixelBufferCGImageCompatibilityKey: true,
-            kCVPixelBufferCGBitmapContextCompatibilityKey: true,
-            kCVPixelBufferMetalCompatibilityKey: true
-        ] as CFDictionary
-
-        var trialPixelBuffer: CVPixelBuffer?
         guard let buffer = context.buffer(
             bytesNoCopy: allocationPointer,
             length: pageAlignedTextureSize,
             options: bufferStorageMode,
-            deallocator: nil
+            deallocator: { pointer, _ in pointer.deallocate() }
         ), let texture = buffer.makeTexture(
             descriptor: textureDescriptor,
             offset: 0,
             bytesPerRow: bytesPerRow
-        ), kCVReturnSuccess == CVPixelBufferCreateWithBytes(
-            nil,
-            width,
-            height,
-            cvPixelFormat.rawValue,
-            allocationPointer,
-            bytesPerRow,
-            nil, nil,
-            pixelBufferAttributes,
-            &trialPixelBuffer
-        ), let pixelBuffer = trialPixelBuffer
+        )
         else { throw Error.initializationFailed }
-
-        vImageBuffer.rowBytes = bytesPerRow
-        vImageBuffer.data = allocationPointer
+        
+        self.pixelBuffer = try .create(
+            width: width,
+            height: height,
+            cvPixelFormat: cvPixelFormat,
+            baseAddress: allocationPointer,
+            bytesPerRow: bytesPerRow,
+            releaseCallback: nil,
+            releaseRefCon: nil,
+            pixelBufferAttributes: [
+                .cGImageCompatibility: true,
+                .cGBitmapContextCompatibility: true,
+                .metalCompatibility: true
+            ],
+            allocator: nil
+        )
         
         self.baseAddress = allocationPointer
         self.bytesPerRow = bytesPerRow
         self.vImageBuffer = vImageBuffer
         self.buffer = buffer
         self.texture = texture
-        self.pixelBuffer = pixelBuffer
         self.mtlPixelFormat = pixelFormat
         self.cvPixelFormat = cvPixelFormat
     }

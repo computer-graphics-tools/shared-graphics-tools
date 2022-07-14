@@ -23,8 +23,6 @@ public extension GraphicsDataProvider {
         return try self.graphicsData().cvPixelBufferView(cvPixelFormat: cvPixelFormat)
     }
     
-    #if arch(arm64)
-    @available(iOS 14.0, macCatalyst 14.0, *)
     func mlMultiArrayView(
         shape: [Int],
         dataType: MLMultiArrayDataType
@@ -35,7 +33,6 @@ public extension GraphicsDataProvider {
         )
     }
     
-    @available(iOS 14.0, macCatalyst 14.0, *)
     func mlMultiArrayView(
         shape: [Int],
         strides: [Int],
@@ -48,7 +45,6 @@ public extension GraphicsDataProvider {
         )
     }
     
-    #if !targetEnvironment(simulator)
     func mtlBufferView(device: MTLDevice) throws -> MTLBuffer {
         return try self.graphicsData().mtlBufferView(device: device)
     }
@@ -64,6 +60,4 @@ public extension GraphicsDataProvider {
             usage: usage
         )
     }
-    #endif // !targetEnvironment(simulator)
-    #endif // arch(arm64)
 }
