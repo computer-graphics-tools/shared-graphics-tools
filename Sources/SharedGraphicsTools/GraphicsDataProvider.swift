@@ -47,7 +47,6 @@ public extension GraphicsDataProvider {
             dataType: dataType
         )
     }
-    #endif
     
     #if !targetEnvironment(simulator)
     func mtlBufferView(device: MTLDevice) throws -> MTLBuffer {
@@ -65,5 +64,6 @@ public extension GraphicsDataProvider {
             usage: usage
         )
     }
-    #endif
+    #endif // !targetEnvironment(simulator)
+    #endif // arch(arm64)
 }

@@ -45,7 +45,6 @@ public extension MultiplanarPlanarGraphicsDataProvider {
             dataType: dataType
         )
     }
-    #endif
     
     #if !targetEnvironment(simulator)
     func mtlBufferView(
@@ -67,5 +66,6 @@ public extension MultiplanarPlanarGraphicsDataProvider {
             usage: usage
         )
     }
-    #endif
+    #endif // !targetEnvironment(simulator)
+    #endif // arch(arm64)
 }

@@ -71,7 +71,6 @@ public struct GraphicsData {
             strides: strides.map(NSNumber.init(value:))
         )
     }
-    #endif
     
     #if !targetEnvironment(simulator)
     public func mtlBufferView(device: MTLDevice) throws -> MTLBuffer {
@@ -107,5 +106,6 @@ public struct GraphicsData {
         
         return texture
     }
-    #endif
+    #endif // !targetEnvironment(simulator)
+    #endif // arch(arm64)
 }
