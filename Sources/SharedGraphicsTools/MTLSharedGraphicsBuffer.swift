@@ -71,12 +71,14 @@ final public class MTLSharedGraphicsBuffer {
     ///   - width: texture width.
     ///   - height: texture height.
     ///   - pixelFormat: texture pixel format.
+    ///   - storageMode: texture storage mode.
     ///   - usage: texture usage.
     public init(
         context: MTLContext,
         width: Int,
         height: Int,
         pixelFormat: PixelFormat,
+        storageMode: MTLStorageMode,
         usage: MTLTextureUsage = [.shaderRead, .shaderWrite, .renderTarget]
     ) throws {
         let pixelFormat = pixelFormat.mtlPixelFormat
@@ -92,13 +94,16 @@ final public class MTLSharedGraphicsBuffer {
         textureDescriptor.usage = usage
         textureDescriptor.width = width
         textureDescriptor.height = height
-        #if os(iOS) && !targetEnvironment(macCatalyst)
-        textureDescriptor.storageMode = .shared
-        bufferStorageMode = .storageModeShared
-        #elseif os(macOS) || targetEnvironment(macCatalyst)
-        textureDescriptor.storageMode = .managed
-        bufferStorageMode = .storageModeManaged
+        textureDescriptor.storageMode = storageMode
+        switch storageMode {
+        case .shared: bufferStorageMode = .storageModeShared
+        case .private: bufferStorageMode = .storageModePrivate
+        case .memoryless: bufferStorageMode = .storageModeMemoryless
+        #if os(macOS) || targetEnvironment(macCatalyst)
+        case .managed: bufferStorageMode = .storageModeManaged
         #endif
+        @unknown default: bufferStorageMode = .storageModeShared
+        }
 
         // MARK: - Page align allocation pointer.
         
