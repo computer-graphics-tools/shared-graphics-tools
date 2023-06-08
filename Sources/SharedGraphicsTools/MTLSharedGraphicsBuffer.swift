@@ -3,8 +3,8 @@ import MetalTools
 import CoreVideoTools
 
 @available(iOS 12.0, macCatalyst 14.0, macOS 11.0, *)
-final public class MTLSharedGraphicsBuffer {
-    
+final public class MTLSharedGraphicsBuffer: NSObject {
+
     // MARK: - Type Definitions
 
     public enum Error: Swift.Error {
@@ -62,7 +62,8 @@ final public class MTLSharedGraphicsBuffer {
     public let bytesPerRow: Int
     public var width: Int { self.texture.width }
     public var height: Int { self.texture.height }
-    
+    public var label: String?
+
     // MARK: - Init
     
     /// Shared graphics buffer.
@@ -208,4 +209,19 @@ final public class MTLSharedGraphicsBuffer {
         self.mtlPixelFormat = pixelFormat
         self.cvPixelFormat = cvPixelFormat
     }
+}
+
+@available(iOS 13.0, *)
+extension MTLSharedGraphicsBuffer: MTLResource {
+    public var device: MTLDevice { self.texture.device }
+    public var cpuCacheMode: MTLCPUCacheMode { self.texture.cpuCacheMode }
+    public var storageMode: MTLStorageMode { self.texture.storageMode }
+    public var hazardTrackingMode: MTLHazardTrackingMode { self.texture.hazardTrackingMode }
+    public var resourceOptions: MTLResourceOptions { self.texture.resourceOptions }
+    public var heap: MTLHeap? { self.texture.heap }
+    public var heapOffset: Int { self.texture.heapOffset }
+    public var allocatedSize: Int { self.texture.allocatedSize }
+    public func makeAliasable() { self.texture.makeAliasable() }
+    public func isAliasable() -> Bool { self.texture.isAliasable() }
+    public func setPurgeableState(_ state: MTLPurgeableState) -> MTLPurgeableState { self.texture.setPurgeableState(state) }
 }
