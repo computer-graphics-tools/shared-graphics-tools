@@ -131,7 +131,7 @@ final public class MTLSharedGraphicsBuffer: NSObject {
         posix_memalign(
             &optionalAllocationPointer,
             pageSize,
-            heapTextureSizeAndAlign.size
+            pageAlignedTextureSize
         )
         
         guard let allocationPointer = optionalAllocationPointer

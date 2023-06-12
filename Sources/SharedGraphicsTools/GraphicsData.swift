@@ -7,6 +7,7 @@ public struct GraphicsData {
     
     public enum Error: Swift.Error {
         case outOfBounds
+        case bufferSizeIsNot4096ByteAligned
     }
     
     public let width: UInt
@@ -70,9 +71,14 @@ public struct GraphicsData {
     }
     
     public func mtlBufferView(device: MTLDevice) throws -> MTLBuffer {
+        let allocationSize = Int(self.bytesPerRow * self.height)
+
+        guard allocationSize & (4096 - 1) == 0
+        else { throw Error.bufferSizeIsNot4096ByteAligned }
+
         guard let buffer = device.makeBuffer(
             bytesNoCopy: self.baseAddress,
-            length: Int(self.bytesPerRow * self.height),
+            length: allocationSize,
             options: .storageModeShared,
             deallocator: nil
         ) else { throw MetalError.MTLDeviceError.bufferCreationFailed }
