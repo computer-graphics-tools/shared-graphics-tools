@@ -4,7 +4,6 @@ import Accelerate
 import CoreVideoTools
 import MetalTools
 
-@available(iOS 12.0, macCatalyst 14.0, macOS 11.0, *)
 public final class MTLSharedGraphicsBuffer: NSObject {
     // MARK: - Type Definitions
 
@@ -14,36 +13,22 @@ public final class MTLSharedGraphicsBuffer: NSObject {
         case unsupportedPixelFormat
     }
 
-    public enum PixelFormat {
+    public enum PixelFormat: CaseIterable {
         case r8Unorm
-        case r8Unorm_srgb
         case r16Float
         case r32Float
-        case rg8Unorm
-        case rg8Unorm_srgb
-        case rg16Float
-        case rg32Float
         case bgra8Unorm
         case bgra8Unorm_srgb
-        case rgba8Unorm
-        case rgba8Unorm_srgb
         case rgba16Float
         case rgba32Float
 
         fileprivate var mtlPixelFormat: MTLPixelFormat {
             switch self {
             case .r8Unorm: return .r8Unorm
-            case .r8Unorm_srgb: return .r8Unorm_srgb
             case .r16Float: return .r16Float
             case .r32Float: return .r32Float
-            case .rg8Unorm: return .rg8Unorm
-            case .rg8Unorm_srgb: return .rg8Unorm_srgb
-            case .rg16Float: return .rg16Float
-            case .rg32Float: return .rg32Float
             case .bgra8Unorm: return .bgra8Unorm
             case .bgra8Unorm_srgb: return .bgra8Unorm_srgb
-            case .rgba8Unorm: return .rgba8Unorm
-            case .rgba8Unorm_srgb: return .rgba8Unorm_srgb
             case .rgba16Float: return .rgba16Float
             case .rgba32Float: return .rgba32Float
             }
@@ -75,15 +60,8 @@ public final class MTLSharedGraphicsBuffer: NSObject {
 
     // MARK: - Init
 
-    /// Shared graphics buffer.
-    /// - Parameters:
-    ///   - context: metal context.
-    ///   - width: texture width.
-    ///   - height: texture height.
-    ///   - pixelFormat: texture pixel format.
-    ///   - usage: texture usage.
     public init(
-        context: MTLContext,
+        device: MTLDevice,
         width: Int,
         height: Int,
         pixelFormat: PixelFormat,
@@ -91,12 +69,13 @@ public final class MTLSharedGraphicsBuffer: NSObject {
         usage: MTLTextureUsage = [.shaderRead, .shaderWrite, .renderTarget]
     ) throws {
         let mtlPixelFormat = pixelFormat.mtlPixelFormat
-        let cvPixelFormat = mtlPixelFormat.compatibleCVPixelFormat
-        guard let bytesPerPixel = mtlPixelFormat.bytesPerPixel,
+        guard let rawCVPixelFormat = mtlPixelFormat.compatibleCVPixelFormat,
+              let bytesPerPixel = mtlPixelFormat.bytesPerPixel,
               let bitsPerComponent = mtlPixelFormat.bitsPerComponent,
               let bitmapInfo = mtlPixelFormat.compatibleBitmapInfo,
               let colorSpace = forceColorSpace ?? mtlPixelFormat.compatibleColorSpace
         else { throw Error.unsupportedPixelFormat }
+        let cvPixelFormat = CVPixelFormat(rawValue: rawCVPixelFormat)
 
         let resourceOptions: MTLResourceOptions = [.crossPlatformSharedOrManaged]
         let textureDescriptor = MTLTextureDescriptor()
@@ -112,8 +91,8 @@ public final class MTLSharedGraphicsBuffer: NSObject {
         ///
         /// The minimum alignment required when creating a texture buffer from a buffer.
         let textureBufferAlignment = max(
-            context.minimumTextureBufferAlignment(for: mtlPixelFormat),
-            context.minimumLinearTextureAlignment(for: mtlPixelFormat)
+            device.minimumTextureBufferAlignment(for: mtlPixelFormat),
+            device.minimumLinearTextureAlignment(for: mtlPixelFormat)
         )
 
         var vImageBuffer = vImage_Buffer()
@@ -147,7 +126,7 @@ public final class MTLSharedGraphicsBuffer: NSObject {
 
         let alloacationSize = max(
             bytesPerRow * height,
-            context.heapTextureSizeAndAlign(descriptor: textureDescriptor).size
+            device.heapTextureSizeAndAlign(descriptor: textureDescriptor).size
         )
 
         /// Current system's RAM page size.
@@ -178,12 +157,13 @@ public final class MTLSharedGraphicsBuffer: NSObject {
         vImageBuffer.rowBytes = bytesPerRow
         vImageBuffer.data = allocationPointer
 
-        let buffer = try context.buffer(
+        guard let buffer = device.makeBuffer(
             bytesNoCopy: allocationPointer,
             length: pageAlignedTextureSize,
             options: resourceOptions,
             deallocator: { _, _ in  }
         )
+        else { throw MetalError.MTLDeviceError.bufferCreationFailed }
 
         guard let texture = buffer.makeTexture(
             descriptor: textureDescriptor,

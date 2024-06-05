@@ -36,6 +36,7 @@ let package = Package(
             name: "SharedGraphicsToolsTests",
             dependencies: [
                 .target(name: "SharedGraphicsTools"),
+                .product(name: "MetalComputeTools", package: "metal-tools")
             ]
         )
     ]
