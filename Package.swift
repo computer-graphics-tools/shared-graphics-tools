@@ -1,11 +1,12 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.6
 
 import PackageDescription
 let package = Package(
     name: "shared-graphics-tools",
     platforms: [
-        .iOS(.v12),
-        .macOS(.v11)
+        .iOS(.v13),
+        .macOS(.v10_15),
+        .macCatalyst(.v13)
     ],
     products: [
         .library(
@@ -14,14 +15,8 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(
-            url: "https://github.com/eugenebokhan/metal-tools.git",
-            .upToNextMinor(from: "1.0.11")
-        ),
-        .package(
-            url: "https://github.com/eugenebokhan/core-video-tools.git",
-            .upToNextMinor(from: "0.0.6")
-        )
+        .package(url: "https://github.com/eugenebokhan/metal-tools.git", exact: "1.2.0"),
+        .package(url: "https://github.com/eugenebokhan/core-video-tools.git", exact: "0.0.6")
     ],
     targets: [
         .target(
@@ -35,6 +30,13 @@ let package = Package(
                     name: "CoreVideoTools",
                     package: "core-video-tools"
                 )
+            ]
+        ),
+        .testTarget(
+            name: "SharedGraphicsToolsTests",
+            dependencies: [
+                .target(name: "SharedGraphicsTools"),
+                .product(name: "MetalComputeTools", package: "metal-tools")
             ]
         )
     ]
