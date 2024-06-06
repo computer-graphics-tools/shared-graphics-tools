@@ -46,12 +46,25 @@ let context = try MTLContext()
 let sharedBuffer = try MTLSharedGraphicsBuffer(
     device: context.device,
     width: 600,
-    height: 60,
+    height: 600,
     pixelFormat: .bgra8Unorm
 )
 
+let rect = CGRect(
+    x: 125,
+    y: 125,
+    width: 300,
+    height: 300
+)
+let whiteColor = CGColor(
+    red: 1,
+    green: 1,
+    blue: 1,
+    alpha: 1
+)
+
 // Draw with CoreGraphics
-sharedBuffer.cgContext.setFillColor(CGColor(red: 1, green: 1, blue: 1, alpha: 1))
+sharedBuffer.cgContext.setFillColor(whiteColor)
 sharedBuffer.cgContext.fill(rect)
 
 // Continue with Metal
