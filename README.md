@@ -1,5 +1,12 @@
 # Shared Graphics Tools
 
+[![Platform Compatibility](https://img.shields.io/badge/Platforms-iOS%20|%20macOS%20|%20watchOS%20|%20tvOS-brightgreen)](https://swift.org/platforms/)
+[![Swift Version](https://img.shields.io/badge/Swift-5.9-orange)](https://swift.org)
+
+<p align="left">
+    <img src="Sources/SharedGraphicsTools/SharedGraphicsTools.docc/Resources/documentation-art/shared-graphics-tools@2x.png", width="120">
+</p>
+
 ## Description
 
 SharedGraphicsTools provides a convenient way to share graphics memory between different APIs on Apple platforms. This library helps [ZERO10](https://zero10.ar) to reduce memory traffic in its computer vision pipelines.
