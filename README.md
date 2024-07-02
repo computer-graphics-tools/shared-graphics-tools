@@ -9,7 +9,7 @@
 
 ## Description
 
-SharedGraphicsTools provides a convenient way to share graphics memory between different APIs on Apple platforms. This library helps [ZERO10](https://zero10.ar) to reduce memory traffic in its computer vision pipelines.
+A set of tools and extensions that allow sharing page-aligned memory allocation between different graphics APIs and provide view interop for them. This library helps [ZERO10](https://zero10.ar) to reduce memory traffic in its computer vision pipelines.
 
 ## Usage
 

@@ -15,8 +15,14 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/eugenebokhan/metal-tools.git", exact: "1.3.0"),
-        .package(url: "https://github.com/eugenebokhan/core-video-tools.git", exact: "0.1.0")
+        .package(
+            url: "https://github.com/eugenebokhan/metal-tools.git",
+            .upToNextMinor(from: "1.3.1")
+        ),
+        .package(
+            url: "https://github.com/eugenebokhan/core-video-tools.git",
+            .upToNextMinor(from: "0.1.0")
+        )
     ],
     targets: [
         .target(
