@@ -2,4 +2,4 @@ version: 1
 builder:
   configs:
     - documentation_targets: [SharedGraphicsTools]
-      scheme: SharedGraphicsTools
+      scheme: shared-graphics-tools
